@@ -26,7 +26,7 @@ connectDb().then(() => {
 });
 
 // Send OTP (signup or login)
-app.post('/auth/api/send-otp', async (req, res) => {
+app.post('/auth-api/send-otp', async (req, res) => {
     try {
         const { email, phone } = req.body;
         if (!phone) return res.status(400).json({ error: 'Phone required' });
@@ -62,7 +62,7 @@ app.post('/auth/api/send-otp', async (req, res) => {
 });
 
 // Verify OTP & create session
-app.post('/auth/api/verify-otp', async (req, res) => {
+app.post('/auth-api/verify-otp', async (req, res) => {
     try {
         const { phone, code } = req.body;
         const otpData = otpCache.get(phone);
@@ -102,7 +102,7 @@ app.post('/auth/api/verify-otp', async (req, res) => {
 });
 
 // Verify session (for Nginx auth_request)
-app.get('/auth/api/verify', async (req, res) => {
+app.get('/auth-api/verify', async (req, res) => {
     try {
         const sessionId = req.cookies.session_id;
         if (!sessionId) return res.sendStatus(401);

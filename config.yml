@@ -1,82 +1,43 @@
-server {
-    client_max_body_size 500m;
-    root /var/www/python_app/pdfapp/build;
-    index index.html index.htm index.nginx-debian.html;
-    server_name openmca.com www.openmca.com;
+create a next.js modern and sleek auth, register will ask user for email and phone number then next step user will receive 6 chr otp numbers only once they verify otp they will be logged in show a list of 2 tools daily ending balances and statement analysis "https://openmca.com/ending_balance","https://openmca.com" use will choose where they want to go. for login user will enter phone number verify otp verify. 
 
-    # =========================
-    # 1. AUTH CHECK FOR MAIN APP
-    # =========================
-    location / {
-        auth_request /internal-auth-verify;
-        error_page 401 = @redirect_to_auth;
-        try_files $uri /index.html;
-    }
+implement api integration here is the base url.
+https://openmca.com/auth/api/
+otp sent here /auth/api/send-otp
+response
+res.json({ success: true });
 
-    # =========================
-    # 2. AUTH CHECK FOR BALANCES
-    # =========================
-    location /ending-balances {
-        auth_request /internal-auth-verify;
-        error_page 401 = @redirect_to_auth;
-        proxy_pass http://127.0.0.1:5000/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
+otp verification here: /auth/api/verify-otp body const { phone, code } = req.body;
+response:
+res.cookie('session_id', sessionId, {
+httpOnly: true,
+secure: true,
+sameSite: 'Strict'
+});
 
-    # =========================
-    # 3. PYTHON API (no auth here unless you want it protected too)
-    # =========================
-    location /api {
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
 
-    # =========================
-    # 4. AUTH REACT APP
-    # =========================
-    location /auth/ {
-        root /var/www/auth_app/build;
-        index index.html;
-        try_files $uri /index.html;
-    }
+    res.json({ success: true });
+session verification
+// Verify session (for Nginx auth_request)
+app.get('/auth/api/verify', async (req, res) => {
+try {
+const sessionId = req.cookies.session_id;
+if (!sessionId) return res.sendStatus(401);
 
-    # =========================
-    # 5. AUTH API
-    # =========================
-    location /auth/api/ {
-        proxy_pass http://127.0.0.1:3000/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-    }
 
-    # =========================
-    # 6. INTERNAL AUTH CHECK ENDPOINT
-    # =========================
-    location = /internal-auth-verify {
-        internal;
-        proxy_pass http://127.0.0.1:3000/api/verify;
-        proxy_set_header Host $host;
-        proxy_set_header X-Original-URI $request_uri;
-        proxy_set_header Cookie $http_cookie;
-    }
+    const db = getDb();
+    const sessionsCol = db.collection('sessions');
 
-    # =========================
-    # 7. REDIRECT TO LOGIN PAGE
-    # =========================
-    location @redirect_to_auth {
-        return 302 /auth/;
-    }
+    const session = await sessionsCol.findOne({
+        sessionId,
+        expiresAt: { $gt: new Date() }
+    });
 
-    listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/openmca.com/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/openmca.com/privkey.pem; # managed by Certbot
-    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+    if (!session) return res.sendStatus(401);
+    res.sendStatus(200);
+} catch (err) {
+    console.error(err);
+    res.status(500).send('Error verifying session');
 }
+});
+
+that code is from backend to help you with the UI integration
