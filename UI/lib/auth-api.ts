@@ -24,7 +24,7 @@ export class AuthApiError extends Error {
   }
 }
 
-const API_BASE_URL = "https://openmca.com/auth/api"
+const API_BASE_URL = "https://openmca.com/api/auth"
 
 class AuthApiService {
   private async makeRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
