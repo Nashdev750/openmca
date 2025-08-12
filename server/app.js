@@ -53,7 +53,7 @@ app.post('/auth/api/send-otp', async (req, res) => {
             from: process.env.TWILIO_PHONE,
             to: phone
         });
-
+        console.log(code)
         res.json({ success: true });
     } catch (err) {
         console.error(err);
