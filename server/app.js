@@ -62,6 +62,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
 });
 
 // Verify OTP & create session
+///       /api/auth/verify-otp
 app.post('/api/auth/verify-otp', async (req, res) => {
     try {
         const { phone, code } = req.body;
