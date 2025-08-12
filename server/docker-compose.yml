@@ -1,0 +1,31 @@
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  auth-api:
+    build: .
+    container_name: auth-api
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: mongodb://mongodb:27017
+      MONGO_DB: ${MONGO_DB}
+      PORT: ${PORT}
+      TWILIO_SID: ${TWILIO_SID}
+      TWILIO_AUTH: ${TWILIO_AUTH}
+      TWILIO_PHONE: ${TWILIO_PHONE}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+
+volumes:
+  mongo_data:
