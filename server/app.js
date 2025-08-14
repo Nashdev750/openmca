@@ -43,8 +43,13 @@ app.post('/api/auth/send-otp', async (req, res) => {
                     createdAt: new Date()
                 });
             }
+        }else{
+          const existing = await usersCol.findOne({ phone });
+          if(!existing){
+             res.status(500).json({ error: "User account does not exist, please register" });
+          }  
         }
-
+        
         const code = crypto.randomInt(100000, 999999).toString();
         otpCache.set(phone, { code, expires: Date.now() + 5 * 60 * 1000 });
 
@@ -57,7 +62,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: err.message });
     }
 });
 

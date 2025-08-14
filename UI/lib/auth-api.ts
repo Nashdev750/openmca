@@ -42,6 +42,7 @@ class AuthApiService {
       const response = await fetch(url, defaultOptions)
 
       if (!response.ok) {
+        console.log(response)
         throw new AuthApiError(`API request failed: ${response.statusText}`, response.status)
       }
 
