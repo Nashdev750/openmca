@@ -18,7 +18,7 @@ export function OtpVerification({ phone, onSuccess, onBack }: OtpVerificationPro
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [resendCountdown, setResendCountdown] = useState(30)
+  const [resendCountdown, setResendCountdown] = useState(300)
   const [isSuccess, setIsSuccess] = useState(false)
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])
 

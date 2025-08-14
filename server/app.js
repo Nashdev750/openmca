@@ -7,6 +7,14 @@ const { ObjectId } = require('mongodb');
 const twilio = require('twilio');
 const { connectDb, getDb } = require('./db');
 
+const rateLimit = require('express-rate-limit');
+
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min window
+  max: 5, // limit each IP to 5 requests per window
+  message: { error: 'Too many OTP requests, please try again later' }
+});
+
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
@@ -26,7 +34,7 @@ connectDb().then(() => {
 });
 
 // Send OTP (signup or login)
-app.post('/api/auth/send-otp', async (req, res) => {
+app.post('/api/auth/send-otp', otpLimiter, async (req, res) => {
     try {
         const { email, phone } = req.body;
         if (!phone) return res.status(400).json({ error: 'Phone required' });
@@ -103,7 +111,7 @@ app.post('/api/auth/verify-otp', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: err.message });
     }
 });
 

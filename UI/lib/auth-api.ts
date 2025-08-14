@@ -41,12 +41,12 @@ class AuthApiService {
     try {
       const response = await fetch(url, defaultOptions)
 
+      const data = await response.json()
       if (!response.ok) {
-        console.log(response)
-        throw new AuthApiError(`API request failed: ${response.statusText}`, response.status)
+        console.log(data)
+        throw new AuthApiError(data.error, response.status)
       }
 
-      const data = await response.json()
       return data
     } catch (error) {
       if (error instanceof AuthApiError) {
