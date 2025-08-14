@@ -19,7 +19,6 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
-app.use(otpLimiter)
 
 // CORS configuration
 app.use(cors({
@@ -45,7 +44,7 @@ connectDb().then(() => {
 });
 
 // Send OTP (signup or login)
-app.post('/api/auth/send-otp', async (req, res) => {
+app.post('/api/auth/send-otp',otpLimiter, async (req, res) => {
     try {
         const { email, phone } = req.body;
         if (!phone) return res.status(400).json({ error: 'Phone required' });
@@ -90,7 +89,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
 
 // Verify OTP & create session
 ///       /api/auth/verify-otp
-app.post('/api/auth/verify-otp', async (req, res) => {
+app.post('/api/auth/verify-otp',otpLimiter, async (req, res) => {
     try {
         const { phone, code } = req.body;
         const otpData = otpCache.get(phone);
