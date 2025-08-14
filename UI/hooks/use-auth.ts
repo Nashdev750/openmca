@@ -20,7 +20,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       // Clear session cookie by calling logout endpoint if available
-      await fetch("https://openmca.com/auth/api/logout", {
+      await fetch("https://openmca.com/api/auth/logout", {
         method: "POST",
         credentials: "include",
       }).catch(() => {

@@ -30,6 +30,15 @@ const otpCache = new Map();
 
 const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 
+async function isMobileNumber(e164) {
+  const resp = await twilioClient.lookups.v2
+    .phoneNumbers(e164)
+    .fetch({ fields: "line_type_intelligence" });
+  const type = resp.lineTypeIntelligence?.type;
+  console.log(`phone:${e164},type:${type}`)
+  return type === "mobile";
+}
+
 connectDb().then(() => {
     console.log('Connected to MongoDB');
 });
@@ -55,13 +64,16 @@ app.post('/api/auth/send-otp', otpLimiter, async (req, res) => {
         }else{
           const existing = await usersCol.findOne({ phone });
           if(!existing){
-             res.status(500).json({ error: "User account does not exist, please register" });
+             return res.status(500).json({ error: "User account does not exist, please register" });
           }  
         }
         
         const code = crypto.randomInt(100000, 999999).toString();
         otpCache.set(phone, { code, expires: Date.now() + 5 * 60 * 1000 });
-
+        const isvalid = await isMobileNumber(phone)
+        if(!isvalid){
+            return res.status(500).json({ error: "Enter valid mobile phone number (No internet-based services)" })
+        }
         await twilioClient.messages.create({
             body: `Your openmca login code is ${code}`,
             from: process.env.TWILIO_PHONE,
@@ -137,7 +149,21 @@ app.get('/api/auth/verify', async (req, res) => {
         res.status(500).send('Error verifying session');
     }
 });
+app.post('/api/auth/logout', async ()=>{
+    try {
+        const sessionId = req.cookies.session_id;
+        if (!sessionId) return res.sendStatus(200);
 
+        const db = getDb();
+        const sessionsCol = db.collection('sessions');
+
+        await sessionsCol.findOneAndDelete({
+            sessionId});
+        res.sendStatus(200)
+    } catch (error) {
+        res.sendStatus(200)
+    }
+})
 app.listen(process.env.PORT || 3000, () => {
     console.log(`Auth server running on port ${process.env.PORT || 3000}`);
 });
