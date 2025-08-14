@@ -150,6 +150,26 @@ app.get('/api/auth/verify', async (req, res) => {
         res.status(500).send('Error verifying session');
     }
 });
+app.get('/api/auth/verify-session', async (req, res) => {
+    try {
+        const sessionId = req.cookies.session_id;
+        if (!sessionId) return res.sendStatus(401);
+
+        const db = getDb();
+        const sessionsCol = db.collection('sessions');
+
+        const session = await sessionsCol.findOne({
+            sessionId,
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!session) return res.sendStatus(401);
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error verifying session');
+    }
+});
 app.post('/api/auth/logout', async ()=>{
     try {
         const sessionId = req.cookies.session_id;

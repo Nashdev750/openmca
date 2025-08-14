@@ -75,7 +75,7 @@ class AuthApiService {
 
   async verifySession(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/verify`, {
+      const response = await fetch(`${API_BASE_URL}/verify-session`, {
         method: "GET",
         credentials: "include",
       })
