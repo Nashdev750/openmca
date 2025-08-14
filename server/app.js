@@ -169,7 +169,7 @@ app.get('/api/auth/verify-session', async (req, res) => {
         res.status(500).send('Error verifying session');
     }
 });
-app.post('/api/auth/logout', async ()=>{
+app.post('/api/auth/logout', async (req, res)=>{
     try {
         const sessionId = req.cookies.session_id;
         if (!sessionId) return res.sendStatus(200);
